@@ -9,6 +9,10 @@ peertube-monitor.exe
 # Test binaries
 *.test
 
+# Temporary files
+*.tmp
+.tmp
+
 # Configuration files with credentials
 config.json
 
