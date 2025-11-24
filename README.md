@@ -68,8 +68,8 @@ go build -o peertube-monitor.exe ./cmd/monitor
 {
   "peertube": {
     "url": "https://your-peertube-instance.com",
-    "username": "your-username",
-    "password": "your-password",
+    "username": "",
+    "password": "",
     "defaults": {
       "category": 5,
       "licence": 9,
@@ -101,9 +101,9 @@ go build -o peertube-monitor.exe ./cmd/monitor
 ### Configuration Options
 
 #### PeerTube Settings
-- **url** – Your PeerTube instance URL
-- **username** – Your PeerTube username
-- **password** – Your PeerTube password
+- **url** – Your PeerTube instance URL (can use `PEERTUBE_URL` env var)
+- **username** – Your PeerTube username (can use `PEERTUBE_USERNAME` env var)
+- **password** – Your PeerTube password (can use `PEERTUBE_PASSWORD` env var)
 - **defaults.category** – Default video category (number)
 - **defaults.licence** – Default license (number)
 - **defaults.language** – Language code (e.g., "da", "en")
@@ -118,6 +118,35 @@ go build -o peertube-monitor.exe ./cmd/monitor
 - **videoExtensions** – File extensions to monitor
 - **settleTime** – Seconds to wait for file to stop changing
 - **maxRetries** – Upload retry attempts before marking as failed
+
+### Environment Variables (Recommended for Services)
+
+For production deployments, especially when running as a Windows service, you can provide credentials via environment variables instead of storing them in the config file:
+
+**Supported environment variables:**
+- `PEERTUBE_URL` – Override PeerTube instance URL
+- `PEERTUBE_USERNAME` – PeerTube username
+- `PEERTUBE_PASSWORD` – PeerTube password
+
+Environment variables take precedence over values in `config.json`. This allows you to:
+- Keep sensitive credentials out of config files
+- Store only non-sensitive settings (paths, metadata) in `config.json`
+- Manage credentials securely via Windows service environment
+
+**Example config.json without credentials:**
+```json
+{
+  "peertube": {
+    "url": "https://peertube.sandum.net",
+    "username": "",
+    "password": "",
+    "defaults": { ... }
+  },
+  "watcher": { ... }
+}
+```
+
+Then set environment variables in your service definition (see Windows Service section below).
 
 ## Usage
 
@@ -138,11 +167,19 @@ You can use NSSM (Non-Sucking Service Manager) to run this as a Windows service:
 
 ```powershell
 # Download NSSM from https://nssm.cc/
-nssm install PeerTubeMonitor "C:\path\to\peertube-monitor.exe"
-nssm set PeerTubeMonitor AppDirectory "C:\path\to"
+nssm install PeerTubeMonitor "C:\Tools\peertube-monitor.exe"
+nssm set PeerTubeMonitor AppDirectory "C:\Tools"
 nssm set PeerTubeMonitor AppParameters "-config config.json"
+nssm set PeerTubeMonitor DisplayName "PeerTube Upload Monitor"
+nssm set PeerTubeMonitor Description "Automatically uploads videos to PeerTube"
+
+# Set environment variables for credentials (recommended)
+nssm set PeerTubeMonitor AppEnvironmentExtra PEERTUBE_USERNAME=your-username PEERTUBE_PASSWORD=your-password
+
 nssm start PeerTubeMonitor
 ```
+
+**Note:** With this setup, `config.json` in `C:\Tools\` contains only non-sensitive settings (paths, metadata defaults), while credentials are stored securely in the service's environment variables.
 
 ### Running as a Service (Linux)
 
@@ -157,6 +194,8 @@ After=network.target
 Type=simple
 User=your-user
 WorkingDirectory=/path/to/peertube-monitor
+Environment="PEERTUBE_USERNAME=your-username"
+Environment="PEERTUBE_PASSWORD=your-password"
 ExecStart=/path/to/peertube-monitor -config config.json
 Restart=always
 

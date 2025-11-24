@@ -1,8 +1,8 @@
 {
   "peertube": {
     "url": "https://peertube.sandum.net",
-    "username": "your-username",
-    "password": "your-password",
+    "username": "",
+    "password": "",
     "defaults": {
       "category": 5,
       "licence": 9,

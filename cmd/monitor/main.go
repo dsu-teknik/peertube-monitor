@@ -39,6 +39,7 @@ func main() {
 	logger := setupLogger(cfg)
 	logger.Printf("PeerTube Monitor v%s starting...", version)
 	logger.Printf("Configuration loaded from: %s", *configPath)
+	logger.Printf("Credentials loaded from: %s", cfg.GetCredentialSource())
 
 	// Create PeerTube client
 	client := peertube.NewClient(

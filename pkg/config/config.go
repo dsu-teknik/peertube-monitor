@@ -69,6 +69,9 @@ func Load(path string) (*Config, error) {
 		cfg.Watcher.VideoExtensions = []string{".mp4", ".webm", ".mkv", ".avi", ".mov", ".flv"}
 	}
 
+	// Override with environment variables if present
+	cfg.loadFromEnv()
+
 	// Ensure paths are absolute
 	if cfg.Watcher.WatchPath != "" && !filepath.IsAbs(cfg.Watcher.WatchPath) {
 		cfg.Watcher.WatchPath, _ = filepath.Abs(cfg.Watcher.WatchPath)
@@ -81,6 +84,32 @@ func Load(path string) (*Config, error) {
 	}
 
 	return &cfg, nil
+}
+
+func (c *Config) loadFromEnv() {
+	// Load PeerTube credentials from environment variables if not set in config
+	if username := os.Getenv("PEERTUBE_USERNAME"); username != "" {
+		c.PeerTube.Username = username
+	}
+	if password := os.Getenv("PEERTUBE_PASSWORD"); password != "" {
+		c.PeerTube.Password = password
+	}
+	if url := os.Getenv("PEERTUBE_URL"); url != "" {
+		c.PeerTube.URL = url
+	}
+}
+
+func (c *Config) GetCredentialSource() string {
+	username := os.Getenv("PEERTUBE_USERNAME")
+	password := os.Getenv("PEERTUBE_PASSWORD")
+
+	if username != "" && password != "" {
+		return "environment variables"
+	}
+	if username != "" || password != "" {
+		return "mixed (config file + environment variables)"
+	}
+	return "config file"
 }
 
 func (c *Config) Validate() error {
