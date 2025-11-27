@@ -1,0 +1,32 @@
+{
+  "peertube": {
+    "url": "https://peertube.sandum.net",
+    "username": "",
+    "password": "",
+    "defaults": {
+      "channelId": 0,
+      "category": 5,
+      "licence": 9,
+      "language": "da",
+      "privacy": 1,
+      "description": "Automatically uploaded",
+      "tags": [],
+      "downloadEnabled": false,
+      "commentsEnabled": true,
+      "waitTranscoding": false,
+      "nsfw": false
+    }
+  },
+  "watcher": {
+    "watchPath": "C:\\Users\\YourName\\Videos\\Upload",
+    "donePath": "C:\\Users\\YourName\\Videos\\Done",
+    "failedPath": "C:\\Users\\YourName\\Videos\\Failed",
+    "videoExtensions": [".mp4", ".webm", ".mkv", ".avi", ".mov", ".flv"],
+    "settleTime": 5,
+    "maxRetries": 3
+  },
+  "logging": {
+    "logFile": "peertube-monitor.log",
+    "verbose": true
+  }
+}
