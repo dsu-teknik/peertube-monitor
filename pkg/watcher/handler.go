@@ -34,8 +34,20 @@ func (h *UploadHandler) HandleFile(path string) error {
     filename := filepath.Base(path)
     videoName := strings.TrimSuffix(filename, filepath.Ext(filename))
 
+    // Get channel ID from config or fetch from API
+    channelID := h.config.PeerTube.Defaults.ChannelID
+    if channelID == 0 {
+        var err error
+        channelID, err = h.client.GetUserChannel()
+        if err != nil {
+            return fmt.Errorf("getting user channel: %w", err)
+        }
+        h.logger.Printf("Using default channel ID: %d", channelID)
+    }
+
     // Build video attributes from config defaults
     attrs := peertube.VideoAttributes{
+        ChannelID:       channelID,
         Name:            videoName,
         Category:        h.config.PeerTube.Defaults.Category,
         Licence:         h.config.PeerTube.Defaults.Licence,

@@ -42,7 +42,14 @@ type uploadResponse struct {
     } `json:"video"`
 }
 
+type userResponse struct {
+    VideoChannels []struct {
+        ID int `json:"id"`
+    } `json:"videoChannels"`
+}
+
 type VideoAttributes struct {
+    ChannelID       int
     Name            string
     Category        int
     Licence         int
@@ -116,6 +123,43 @@ func (c *Client) Authenticate() error {
     return nil
 }
 
+func (c *Client) GetUserChannel() (int, error) {
+    if c.token == "" {
+        if err := c.Authenticate(); err != nil {
+            return 0, fmt.Errorf("authentication required: %w", err)
+        }
+    }
+
+    req, err := http.NewRequest("GET", c.baseURL+"/api/v1/users/me", nil)
+    if err != nil {
+        return 0, fmt.Errorf("creating user request: %w", err)
+    }
+
+    req.Header.Set("Authorization", "Bearer "+c.token)
+
+    resp, err := c.httpClient.Do(req)
+    if err != nil {
+        return 0, fmt.Errorf("user request: %w", err)
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        body, _ := io.ReadAll(resp.Body)
+        return 0, fmt.Errorf("getting user info failed: %s - %s", resp.Status, string(body))
+    }
+
+    var user userResponse
+    if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
+        return 0, fmt.Errorf("decoding user response: %w", err)
+    }
+
+    if len(user.VideoChannels) == 0 {
+        return 0, fmt.Errorf("user has no video channels")
+    }
+
+    return user.VideoChannels[0].ID, nil
+}
+
 func (c *Client) Upload(videoPath string, attrs VideoAttributes) (*uploadResponse, error) {
     if c.token == "" {
         if err := c.Authenticate(); err != nil {
@@ -144,6 +188,7 @@ func (c *Client) Upload(videoPath string, attrs VideoAttributes) (*uploadRespons
 
     // Add metadata fields
     fields := map[string]string{
+        "channelId":       strconv.Itoa(attrs.ChannelID),
         "name":            attrs.Name,
         "category":        strconv.Itoa(attrs.Category),
         "licence":         strconv.Itoa(attrs.Licence),

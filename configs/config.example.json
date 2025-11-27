@@ -4,6 +4,7 @@
     "username": "",
     "password": "",
     "defaults": {
+      "channelId": 0,
       "category": 5,
       "licence": 9,
       "language": "da",

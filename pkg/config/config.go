@@ -21,6 +21,7 @@ type PeerTubeConfig struct {
 }
 
 type VideoDefaults struct {
+    ChannelID          int      `json:"channelId,omitempty"`
     Category           int      `json:"category"`
     Licence            int      `json:"licence"`
     Language           string   `json:"language"`
