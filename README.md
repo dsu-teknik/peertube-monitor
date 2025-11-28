@@ -18,6 +18,24 @@ Automatic video uploader for PeerTube. Monitors a folder for new video files and
 
 ## Installation
 
+### Windows MSI Installer (Recommended for Windows)
+
+Download the latest MSI installer from the [Releases](https://github.com/yourusername/peertube-monitor/releases) page.
+
+The installer provides:
+- **Guided setup** – Configure all settings through the installation wizard
+- **Automatic service installation** – Runs as a Windows service on startup
+- **Secure credential storage** – Credentials stored in service environment (not in config file)
+- **Pre-configured folders** – Watch, done, and failed folders created automatically
+
+During installation, you'll configure:
+1. PeerTube server URL, username, and password
+2. Folder locations for watching, done, and failed uploads
+3. Video defaults (category, licence, language, privacy, description)
+4. Advanced settings (settle time, retry count, comments/downloads)
+
+After installation, the service starts automatically and begins monitoring your watch folder.
+
 ### On Fedora/Linux
 
 ```bash
@@ -36,6 +54,22 @@ go build -o peertube-monitor ./cmd/monitor
 # Or build for Windows
 GOOS=windows GOARCH=amd64 go build -o peertube-monitor.exe ./cmd/monitor
 ```
+
+### Building Windows Installer Locally
+
+**Prerequisites:**
+- .NET SDK (for WiX v5)
+- WiX Toolset v5: `dotnet tool install --global wix`
+
+```powershell
+# Build with default version (1.0.0)
+./build-installer.ps1
+
+# Build with custom version
+./build-installer.ps1 -Version "1.2.3"
+```
+
+The MSI will be created in the `installer/` directory.
 
 ### Building for Windows from Linux
 
@@ -166,6 +200,12 @@ Then set environment variables in your service definition (see Windows Service s
 
 ### Running as a Service (Windows)
 
+**Option 1: MSI Installer (Recommended)**
+
+The MSI installer automatically sets up and starts the Windows service. No manual configuration needed.
+
+**Option 2: Manual Installation with NSSM**
+
 You can use NSSM (Non-Sucking Service Manager) to run this as a Windows service:
 
 ```powershell
@@ -221,22 +261,66 @@ sudo systemctl start peertube-monitor
 4. **Success** – On successful upload, the file is moved to the done folder or deleted
 5. **Failure** – On upload failure, the upload is retried up to maxRetries times, then moved to the failed folder
 
+## Building Releases with GitHub Actions
+
+The project includes a GitHub Actions workflow that automatically builds Windows MSI installers without requiring a local Windows environment or WiX license (WiX is open source).
+
+### Creating a Release
+
+**Option 1: Version Tag (Recommended)**
+
+```bash
+# Create and push a version tag
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow will automatically:
+- Build the Windows executable
+- Create the MSI installer
+- Publish a GitHub release with both files attached
+
+**Option 2: Manual Workflow Dispatch**
+
+1. Go to the GitHub repository
+2. Click **Actions** → **Build Windows Installer**
+3. Click **Run workflow**
+4. Enter a version number (optional)
+5. Click **Run workflow**
+
+The MSI and executable will be available as downloadable artifacts.
+
+### Workflow Features
+
+- Runs on GitHub's free Windows runners
+- Installs .NET SDK and WiX Toolset v5 automatically
+- Builds both the executable and MSI installer
+- Uploads artifacts for every build
+- Creates GitHub releases for tagged versions
+- No local Windows environment or WiX license required
+
 ## Project Structure
 
 ```
 peertube-monitor/
-├── cmd/monitor/          # Main application entry point
+├── .github/
+│   └── workflows/
+│       └── build-installer.yml   # GitHub Actions workflow
+├── cmd/monitor/                  # Main application entry point
 │   └── main.go
 ├── pkg/
-│   ├── config/          # Configuration handling
+│   ├── config/                   # Configuration handling
 │   │   └── config.go
-│   ├── peertube/        # PeerTube API client
+│   ├── peertube/                 # PeerTube API client
 │   │   └── client.go
-│   └── watcher/         # File monitoring and handling
+│   └── watcher/                  # File monitoring and handling
 │       ├── watcher.go
 │       └── handler.go
+├── installer/                    # WiX installer source
+│   └── PeerTubeMonitor.wxs
 ├── configs/
 │   └── config.example.json
+├── build-installer.ps1           # PowerShell build script
 └── README.md
 ```
 
