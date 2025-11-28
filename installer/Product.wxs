@@ -1,67 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
-  <Package Name="PeerTube Monitor"
-           Version="$(var.ProductVersion)"
+  <Product Id="*"
+           Name="PeerTube Monitor"
+           Language="1033"
+           Version="1.0.0.0"
            Manufacturer="DSU Teknik"
-           UpgradeCode="A8F3D2E1-4B5C-4D6E-8F7A-9B0C1D2E3F4A"
-           Compressed="yes">
+           UpgradeCode="A8F3D2E1-4B5C-4D6E-8F7A-9B0C1D2E3F4A">
 
-    <MajorUpgrade DowngradeErrorMessage="A newer version of PeerTube Monitor is already installed." />
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
-    <MediaTemplate EmbedCab="yes" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate />
 
     <Feature Id="ProductFeature" Title="PeerTube Monitor" Level="1">
-      <ComponentRef Id="MainExecutable" />
-      <ComponentRef Id="ConfigFile" />
-      <ComponentRef Id="ReadmeFile" />
+      <ComponentGroupRef Id="ProductComponents" />
     </Feature>
+  </Product>
 
-    <StandardDirectory Id="ProgramFiles64Folder">
-      <Directory Id="INSTALLFOLDER" Name="PeerTube Monitor">
-
-        <Component Id="MainExecutable" Guid="B9F4E3D2-5C6D-4E7F-9A0B-1C2D3E4F5A6B">
-          <File Id="PeerTubeMonitorEXE"
-                Name="peertube-monitor.exe"
-                Source="..\peertube-monitor.exe"
-                KeyPath="yes" />
-
-          <!-- Install Windows Service -->
-          <ServiceInstall Id="ServiceInstaller"
-                          Type="ownProcess"
-                          Name="PeerTubeMonitor"
-                          DisplayName="PeerTube Monitor"
-                          Description="Automatically monitors folders and uploads videos to PeerTube"
-                          Start="auto"
-                          Account="LocalSystem"
-                          ErrorControl="normal"
-                          Arguments='-config "[INSTALLFOLDER]config.json"' />
-
-          <ServiceControl Id="StartService"
-                          Name="PeerTubeMonitor"
-                          Start="install"
-                          Stop="both"
-                          Remove="uninstall"
-                          Wait="yes" />
-        </Component>
-
-        <Component Id="ConfigFile" Guid="C0E5F4D3-6D7E-4F8A-9B1C-2D3E4F5A6B7C">
-          <File Id="ConfigJSON"
-                Name="config.json"
-                Source="..\configs\config.example.json"
-                KeyPath="yes" />
-        </Component>
-
-        <Component Id="ReadmeFile" Guid="D1F6E5D4-7E8F-5A9B-0C1D-3E4F5A6B7C8D">
-          <File Id="ReadmeMD"
-                Name="README.txt"
-                Source="..\installer\README.txt"
-                KeyPath="yes" />
-        </Component>
-
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="PeerTube Monitor" />
       </Directory>
-    </StandardDirectory>
+    </Directory>
+  </Fragment>
 
-  </Package>
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="ProductComponent">
+        <File Source="..\peertube-monitor.exe" />
+        <File Source="..\configs\config.example.json" Name="config.json" />
+        <File Source="..\installer\README.txt" />
+
+        <ServiceInstall
+          Id="ServiceInstaller"
+          Type="ownProcess"
+          Name="PeerTubeMonitor"
+          DisplayName="PeerTube Monitor"
+          Description="Automatically monitors folders and uploads videos to PeerTube"
+          Start="auto"
+          Account="LocalSystem"
+          ErrorControl="normal"
+          Arguments='-config "[INSTALLFOLDER]config.json"' />
+
+        <ServiceControl
+          Id="StartService"
+          Name="PeerTubeMonitor"
+          Start="install"
+          Stop="both"
+          Remove="uninstall"
+          Wait="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
 
 </Wix>
