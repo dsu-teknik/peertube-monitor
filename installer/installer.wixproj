@@ -1,4 +1,4 @@
-<Project Sdk="WixToolset.Sdk/5.0.0">
+<Project Sdk="WixToolset.Sdk/4.0.6">
   <PropertyGroup>
     <OutputName>PeerTubeMonitor</OutputName>
     <OutputType>Package</OutputType>
