@@ -69,9 +69,9 @@ try {
 Write-Host "`nStep 3: Updating version in Product.wxs..." -ForegroundColor Yellow
 
 $ProductWxsPath = Join-Path $InstallerDir "Product.wxs"
-$ProductWxsContent = Get-Content $ProductWxsPath -Raw
+$ProductWxsContent = Get-Content $ProductWxsPath -Raw -Encoding UTF8
 $ProductWxsContent = $ProductWxsContent -replace 'Version="[\d\.]+"', "Version=`"$Version.0`""
-Set-Content -Path $ProductWxsPath -Value $ProductWxsContent
+Set-Content -Path $ProductWxsPath -Value $ProductWxsContent -Encoding UTF8 -NoNewline
 
 Write-Host "  ✓ Version updated to $Version.0" -ForegroundColor Green
 
