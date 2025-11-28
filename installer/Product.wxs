@@ -1,45 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-
   <Package Name="PeerTube Monitor"
            Manufacturer="DSU Teknik"
            Version="1.0.0.0"
            UpgradeCode="A8F3D2E1-4B5C-4D6E-8F7A-9B0C1D2E3F4A">
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-
     <MediaTemplate EmbedCab="yes" />
 
     <Feature Id="ProductFeature">
-      <ComponentRef Id="MainComponent" />
+      <ComponentGroupRef Id="ProductComponents" />
     </Feature>
-
-    <StandardDirectory Id="ProgramFiles64Folder">
-      <Directory Id="INSTALLFOLDER" Name="PeerTube Monitor">
-        <Component Id="MainComponent">
-          <File Source="..\peertube-monitor.exe" />
-          <File Source="..\configs\config.example.json" Name="config.json" />
-          <File Source="..\installer\README.txt" />
-
-          <ServiceInstall
-            Type="ownProcess"
-            Name="PeerTubeMonitor"
-            DisplayName="PeerTube Monitor"
-            Description="Automatically monitors folders and uploads videos to PeerTube"
-            Start="auto"
-            Account="LocalSystem"
-            ErrorControl="normal"
-            Arguments='-config "[INSTALLFOLDER]config.json"' />
-
-          <ServiceControl
-            Name="PeerTubeMonitor"
-            Start="install"
-            Stop="both"
-            Remove="uninstall" />
-        </Component>
-      </Directory>
-    </StandardDirectory>
-
   </Package>
-
 </Wix>
