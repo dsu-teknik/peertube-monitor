@@ -65,22 +65,12 @@ try {
     exit 1
 }
 
-# Step 3: Update version in Product.wxs
-Write-Host "`nStep 3: Updating version in Product.wxs..." -ForegroundColor Yellow
-
-$ProductWxsPath = Join-Path $InstallerDir "Product.wxs"
-$ProductWxsContent = Get-Content $ProductWxsPath -Raw -Encoding UTF8
-$ProductWxsContent = $ProductWxsContent -replace 'Version="[\d\.]+"', "Version=`"$Version.0`""
-Set-Content -Path $ProductWxsPath -Value $ProductWxsContent -Encoding UTF8 -NoNewline
-
-Write-Host "  ✓ Version updated to $Version.0" -ForegroundColor Green
-
-# Step 4: Build MSI
-Write-Host "`nStep 4: Building MSI installer..." -ForegroundColor Yellow
+# Step 3: Build MSI
+Write-Host "`nStep 3: Building MSI installer..." -ForegroundColor Yellow
 
 Push-Location $InstallerDir
 try {
-    & dotnet build installer.wixproj -c Release -o $BuildDir
+    & dotnet build installer.wixproj -c Release -o $BuildDir -p:DefineConstants="ProductVersion=$Version.0"
 
     if ($LASTEXITCODE -ne 0) {
         Write-Error "MSI build failed with exit code $LASTEXITCODE"
@@ -98,9 +88,9 @@ try {
     Pop-Location
 }
 
-# Step 5: Sign MSI (optional)
+# Step 4: Sign MSI (optional)
 if ($Sign) {
-    Write-Host "`nStep 5: Signing MSI..." -ForegroundColor Yellow
+    Write-Host "`nStep 4: Signing MSI..." -ForegroundColor Yellow
 
     # You'll need to configure your signing certificate
     # Example using signtool.exe:
@@ -109,7 +99,7 @@ if ($Sign) {
     Write-Host "  ! Signing not configured - implement in build script" -ForegroundColor Yellow
 }
 
-# Step 6: Display results
+# Step 5: Display results
 Write-Host "`n=== Build Complete ===" -ForegroundColor Cyan
 Write-Host "MSI Installer: $OutputMsi" -ForegroundColor Green
 
