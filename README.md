@@ -1,5 +1,8 @@
 # PeerTube Monitor
 
+[![Latest Release](https://img.shields.io/github/v/release/dsu-teknik/peertube-monitor)](https://github.com/dsu-teknik/peertube-monitor/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/dsu-teknik/peertube-monitor/total)](https://github.com/dsu-teknik/peertube-monitor/releases)
+
 Automatic video uploader for PeerTube. Monitors a folder for new video files and automatically uploads them to your PeerTube instance.
 
 ## Features
@@ -20,7 +23,7 @@ Automatic video uploader for PeerTube. Monitors a folder for new video files and
 
 ### Windows MSI Installer (Recommended for Windows)
 
-Download the latest MSI installer from the [Releases](https://github.com/yourusername/peertube-monitor/releases) page.
+**[Download Latest Windows Installer (MSI)](https://github.com/dsu-teknik/peertube-monitor/releases/latest)**
 
 The installer provides:
 - **Guided setup** – Configure all settings through the installation wizard
