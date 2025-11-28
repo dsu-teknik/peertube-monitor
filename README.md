@@ -71,10 +71,10 @@ go build -o peertube-monitor.exe ./cmd/monitor
     "username": "",
     "password": "",
     "defaults": {
-      "category": 5,
-      "licence": 9,
+      "category": "Sports",
+      "licence": "Public Domain Dedication",
       "language": "da",
-      "privacy": 1,
+      "privacy": "Public",
       "description": "Automatically uploaded",
       "tags": [],
       "downloadEnabled": false,
@@ -104,12 +104,15 @@ go build -o peertube-monitor.exe ./cmd/monitor
 - **url** – Your PeerTube instance URL (can use `PEERTUBE_URL` env var)
 - **username** – Your PeerTube username (can use `PEERTUBE_USERNAME` env var)
 - **password** – Your PeerTube password (can use `PEERTUBE_PASSWORD` env var)
-- **defaults.category** – Default video category (number)
-- **defaults.licence** – Default license (number)
+- **defaults.category** – Default video category (string name or number ID, e.g., `"Sports"` or `5`)
+- **defaults.licence** – Default license (string name or number ID, e.g., `"Public Domain Dedication"` or `7`)
 - **defaults.language** – Language code (e.g., "da", "en")
-- **defaults.privacy** – Privacy level (1=Public, 2=Unlisted, 3=Private)
+- **defaults.privacy** – Privacy level (string name or number ID, e.g., `"Public"` or `1`)
+  - Available privacy levels: `"Public"` (1), `"Unlisted"` (2), `"Private"` (3), `"Internal"` (4), `"Password protected"` (5)
 - **defaults.downloadEnabled** – Allow video downloads
 - **defaults.commentsEnabled** – Enable comments
+
+**Note:** The application fetches available categories, licences, and privacy levels from your PeerTube instance at startup. You can use either human-readable names (case-insensitive) or numeric IDs. If you provide an invalid value, the error message will list all available options.
 
 #### Watcher Settings
 - **watchPath** – Folder to monitor for new videos

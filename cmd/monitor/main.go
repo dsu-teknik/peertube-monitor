@@ -6,6 +6,7 @@ import (
     "log"
     "os"
     "os/signal"
+    "sort"
     "syscall"
 
     "github.com/dsu-teknik/peertube-monitor/pkg/config"
@@ -54,6 +55,38 @@ func main() {
         log.Fatalf("Authentication failed: %v", err)
     }
     logger.Printf("Authentication successful")
+
+    // Fetch metadata from PeerTube
+    logger.Printf("Fetching video metadata from PeerTube server...")
+    metadata, err := client.FetchMetadata()
+    if err != nil {
+        log.Fatalf("Failed to fetch metadata: %v", err)
+    }
+
+    logger.Printf("Available categories: %d options", len(metadata.Categories))
+    if cfg.Logging.Verbose {
+        logSortedMetadata(logger, metadata.Categories)
+    }
+
+    logger.Printf("Available licences: %d options", len(metadata.Licences))
+    if cfg.Logging.Verbose {
+        logSortedMetadata(logger, metadata.Licences)
+    }
+
+    logger.Printf("Available privacy levels: %d options", len(metadata.Privacies))
+    if cfg.Logging.Verbose {
+        logSortedMetadata(logger, metadata.Privacies)
+    }
+
+    // Resolve metadata in config
+    if err := cfg.ResolveMetadata(metadata.Categories, metadata.Licences, metadata.Privacies); err != nil {
+        log.Fatalf("Invalid configuration: %v", err)
+    }
+
+    logger.Printf("Video defaults: category=%q, licence=%q, privacy=%q",
+        metadata.Categories[fmt.Sprintf("%d", cfg.PeerTube.Defaults.Category)],
+        metadata.Licences[fmt.Sprintf("%d", cfg.PeerTube.Defaults.Licence)],
+        metadata.Privacies[fmt.Sprintf("%d", cfg.PeerTube.Defaults.Privacy)])
 
     // Create upload handler
     handler := watcher.NewUploadHandler(client, cfg, logger)
@@ -121,4 +154,22 @@ func setupLogger(cfg *config.Config) *log.Logger {
     }
 
     return logger
+}
+
+func logSortedMetadata(logger *log.Logger, metadata map[string]string) {
+    // Create slice of names for sorting
+    var names []string
+    nameToID := make(map[string]string)
+    for id, name := range metadata {
+        names = append(names, name)
+        nameToID[name] = id
+    }
+
+    // Sort alphabetically
+    sort.Strings(names)
+
+    // Log in sorted order
+    for _, name := range names {
+        logger.Printf("  - %s: %q", nameToID[name], name)
+    }
 }

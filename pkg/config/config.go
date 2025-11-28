@@ -5,6 +5,7 @@ import (
     "fmt"
     "os"
     "path/filepath"
+    "sort"
 )
 
 type Config struct {
@@ -21,17 +22,22 @@ type PeerTubeConfig struct {
 }
 
 type VideoDefaults struct {
-    ChannelID          int      `json:"channelId,omitempty"`
-    Category           int      `json:"category"`
-    Licence            int      `json:"licence"`
-    Language           string   `json:"language"`
-    Privacy            int      `json:"privacy"`
-    Description        string   `json:"description"`
-    Tags               []string `json:"tags"`
-    DownloadEnabled    bool     `json:"downloadEnabled"`
-    CommentsEnabled    bool     `json:"commentsEnabled"`
-    WaitTranscoding    bool     `json:"waitTranscoding"`
-    NSFW               bool     `json:"nsfw"`
+    ChannelID          int             `json:"channelId,omitempty"`
+    CategoryRaw        json.RawMessage `json:"category"`
+    LicenceRaw         json.RawMessage `json:"licence"`
+    Language           string          `json:"language"`
+    PrivacyRaw         json.RawMessage `json:"privacy"`
+    Description        string          `json:"description"`
+    Tags               []string        `json:"tags"`
+    DownloadEnabled    bool            `json:"downloadEnabled"`
+    CommentsEnabled    bool            `json:"commentsEnabled"`
+    WaitTranscoding    bool            `json:"waitTranscoding"`
+    NSFW               bool            `json:"nsfw"`
+
+    // Resolved integer values (populated after validation)
+    Category int `json:"-"`
+    Licence  int `json:"-"`
+    Privacy  int `json:"-"`
 }
 
 type WatcherConfig struct {
@@ -137,4 +143,120 @@ func (c *Config) Validate() error {
     }
 
     return nil
+}
+
+// ResolveMetadata resolves category, licence, and privacy from string or int values
+func (c *Config) ResolveMetadata(categories, licences, privacies map[string]string) error {
+    var err error
+
+    // Resolve category
+    c.PeerTube.Defaults.Category, err = resolveField(
+        "category",
+        c.PeerTube.Defaults.CategoryRaw,
+        categories,
+    )
+    if err != nil {
+        return err
+    }
+
+    // Resolve licence
+    c.PeerTube.Defaults.Licence, err = resolveField(
+        "licence",
+        c.PeerTube.Defaults.LicenceRaw,
+        licences,
+    )
+    if err != nil {
+        return err
+    }
+
+    // Resolve privacy
+    c.PeerTube.Defaults.Privacy, err = resolveField(
+        "privacy",
+        c.PeerTube.Defaults.PrivacyRaw,
+        privacies,
+    )
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
+func resolveField(fieldName string, raw json.RawMessage, mapping map[string]string) (int, error) {
+    // Try parsing as integer first
+    var intVal int
+    if err := json.Unmarshal(raw, &intVal); err == nil {
+        // Verify the integer ID exists in the mapping
+        if _, exists := mapping[fmt.Sprintf("%d", intVal)]; !exists {
+            return 0, fmt.Errorf("%s: invalid ID %d. Available options: %s", fieldName, intVal, formatMapping(mapping))
+        }
+        return intVal, nil
+    }
+
+    // Try parsing as string
+    var strVal string
+    if err := json.Unmarshal(raw, &strVal); err != nil {
+        return 0, fmt.Errorf("%s: invalid value format (must be string or integer)", fieldName)
+    }
+
+    // Look up the string in the mapping (case-insensitive)
+    for id, name := range mapping {
+        if equalFold(name, strVal) {
+            var idInt int
+            fmt.Sscanf(id, "%d", &idInt)
+            return idInt, nil
+        }
+    }
+
+    return 0, fmt.Errorf("%s: unknown value %q. Available options: %s", fieldName, strVal, formatMapping(mapping))
+}
+
+func formatMapping(mapping map[string]string) string {
+    // Create slice of names for sorting
+    var names []string
+    nameToID := make(map[string]string)
+    for id, name := range mapping {
+        names = append(names, name)
+        nameToID[name] = id
+    }
+
+    // Sort alphabetically
+    sort.Strings(names)
+
+    // Build output in sorted order
+    var items []string
+    for _, name := range names {
+        items = append(items, fmt.Sprintf("%s=%q", nameToID[name], name))
+    }
+    return "[" + joinStrings(items, ", ") + "]"
+}
+
+func equalFold(a, b string) bool {
+    if len(a) != len(b) {
+        return false
+    }
+    for i := 0; i < len(a); i++ {
+        ca, cb := a[i], b[i]
+        if ca >= 'A' && ca <= 'Z' {
+            ca += 'a' - 'A'
+        }
+        if cb >= 'A' && cb <= 'Z' {
+            cb += 'a' - 'A'
+        }
+        if ca != cb {
+            return false
+        }
+    }
+    return true
+}
+
+func joinStrings(items []string, sep string) string {
+    if len(items) == 0 {
+        return ""
+    }
+    result := items[0]
+    for i := 1; i < len(items); i++ {
+        result += sep + items[i]
+    }
+    return result
 }

@@ -48,6 +48,12 @@ type userResponse struct {
     } `json:"videoChannels"`
 }
 
+type Metadata struct {
+    Categories map[string]string
+    Licences   map[string]string
+    Privacies  map[string]string
+}
+
 type VideoAttributes struct {
     ChannelID       int
     Name            string
@@ -249,4 +255,62 @@ func (c *Client) Upload(videoPath string, attrs VideoAttributes) (*uploadRespons
     }
 
     return &result, nil
+}
+
+func (c *Client) FetchMetadata() (*Metadata, error) {
+    metadata := &Metadata{
+        Categories: make(map[string]string),
+        Licences:   make(map[string]string),
+        Privacies:  make(map[string]string),
+    }
+
+    // Fetch categories
+    resp, err := c.httpClient.Get(c.baseURL + "/api/v1/videos/categories")
+    if err != nil {
+        return nil, fmt.Errorf("fetching categories: %w", err)
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        body, _ := io.ReadAll(resp.Body)
+        return nil, fmt.Errorf("categories request failed: %s - %s", resp.Status, string(body))
+    }
+
+    if err := json.NewDecoder(resp.Body).Decode(&metadata.Categories); err != nil {
+        return nil, fmt.Errorf("decoding categories: %w", err)
+    }
+
+    // Fetch licences
+    resp, err = c.httpClient.Get(c.baseURL + "/api/v1/videos/licences")
+    if err != nil {
+        return nil, fmt.Errorf("fetching licences: %w", err)
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        body, _ := io.ReadAll(resp.Body)
+        return nil, fmt.Errorf("licences request failed: %s - %s", resp.Status, string(body))
+    }
+
+    if err := json.NewDecoder(resp.Body).Decode(&metadata.Licences); err != nil {
+        return nil, fmt.Errorf("decoding licences: %w", err)
+    }
+
+    // Fetch privacies
+    resp, err = c.httpClient.Get(c.baseURL + "/api/v1/videos/privacies")
+    if err != nil {
+        return nil, fmt.Errorf("fetching privacies: %w", err)
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        body, _ := io.ReadAll(resp.Body)
+        return nil, fmt.Errorf("privacies request failed: %s - %s", resp.Status, string(body))
+    }
+
+    if err := json.NewDecoder(resp.Body).Decode(&metadata.Privacies); err != nil {
+        return nil, fmt.Errorf("decoding privacies: %w", err)
+    }
+
+    return metadata, nil
 }

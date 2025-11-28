@@ -5,10 +5,10 @@
     "password": "",
     "defaults": {
       "channelId": 0,
-      "category": 5,
-      "licence": 9,
+      "category": "Sports",
+      "licence": "Public Domain Dedication",
       "language": "da",
-      "privacy": 1,
+      "privacy": "Public",
       "description": "Automatically uploaded",
       "tags": [],
       "downloadEnabled": false,
