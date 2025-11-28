@@ -62,16 +62,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PeerTubeMonitor-${{ steps.version.outputs.VERSION }}
-          path: |
-            installer/PeerTubeMonitor-*.msi
-            peertube-monitor.exe
+          path: build/PeerTubeMonitor-*.msi
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            installer/PeerTubeMonitor-*.msi
-            peertube-monitor.exe
+          files: build/PeerTubeMonitor-*.msi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
