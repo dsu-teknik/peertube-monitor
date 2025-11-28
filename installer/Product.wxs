@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <Package Name="PeerTube Monitor"
+           Version="1.0.0.0"
+           Manufacturer="DSU Teknik"
+           UpgradeCode="A8F3D2E1-4B5C-4D6E-8F7A-9B0C1D2E3F4A"
+           InstallerVersion="500"
+           Compressed="yes">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of PeerTube Monitor is already installed." />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- UI with custom dialogs -->
+    <ui:WixUI Id="WixUI_FeatureTree" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <UIRef Id="ConfigDialogs" />
+
+    <!-- Properties for configuration -->
+    <Property Id="PEERTUBE_URL" Value="https://peertube.sandum.net" />
+    <Property Id="PEERTUBE_USERNAME" />
+    <Property Id="PEERTUBE_PASSWORD" Secure="yes" />
+    <Property Id="WATCH_PATH" Value="C:\Videos\Upload" />
+    <Property Id="DONE_PATH" Value="C:\Videos\Done" />
+    <Property Id="FAILED_PATH" Value="C:\Videos\Failed" />
+    <Property Id="VIDEO_CATEGORY" Value="5" />
+    <Property Id="VIDEO_LICENCE" Value="9" />
+    <Property Id="VIDEO_LANGUAGE" Value="da" />
+    <Property Id="VIDEO_PRIVACY" Value="1" />
+    <Property Id="VIDEO_DESCRIPTION" Value="Automatically uploaded" />
+    <Property Id="SETTLE_TIME" Value="5" />
+    <Property Id="MAX_RETRIES" Value="3" />
+    <Property Id="DOWNLOAD_ENABLED" Value="0" />
+    <Property Id="COMMENTS_ENABLED" Value="1" />
+    <Property Id="WAIT_TRANSCODING" Value="0" />
+    <Property Id="NSFW" Value="0" />
+
+    <Feature Id="ProductFeature" Title="PeerTube Monitor" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentGroupRef Id="ConfigComponents" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="PeerTube Monitor" />
+    </StandardDirectory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="MainExecutable" Guid="B9F4E3D2-5C6D-4E7F-9A0B-1C2D3E4F5A6B">
+        <File Id="PeerTubeMonitorEXE"
+              Name="peertube-monitor.exe"
+              Source="..\peertube-monitor.exe"
+              KeyPath="yes" />
+
+        <!-- Install Windows Service -->
+        <ServiceInstall Id="ServiceInstaller"
+                        Type="ownProcess"
+                        Name="PeerTubeMonitor"
+                        DisplayName="PeerTube Monitor"
+                        Description="Automatically monitors folders and uploads videos to PeerTube"
+                        Start="auto"
+                        Account="LocalSystem"
+                        ErrorControl="normal"
+                        Arguments='-config "[INSTALLFOLDER]config.json"'>
+          <!-- Service environment variables for credentials -->
+          <ServiceConfig xmlns="http://wixtoolset.org/schemas/v4/wxs"
+                         ServiceName="PeerTubeMonitor"
+                         OnInstall="yes"
+                         OnReinstall="yes">
+            <Environment Name="PEERTUBE_URL" Value="[PEERTUBE_URL]" />
+            <Environment Name="PEERTUBE_USERNAME" Value="[PEERTUBE_USERNAME]" />
+            <Environment Name="PEERTUBE_PASSWORD" Value="[PEERTUBE_PASSWORD]" />
+          </ServiceConfig>
+        </ServiceInstall>
+
+        <ServiceControl Id="StartService"
+                        Name="PeerTubeMonitor"
+                        Start="install"
+                        Stop="both"
+                        Remove="uninstall"
+                        Wait="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="ConfigComponents" Directory="INSTALLFOLDER">
+      <Component Id="ConfigFile" Guid="C0E5F4D3-6D7E-4F8A-9B1C-2D3E4F5A6B7C">
+        <File Id="ConfigJSON" Name="config.json" Source="config.json.template" KeyPath="yes">
+          <!-- Replace tokens in config file -->
+          <util:XmlFile Id="UpdatePeerTubeURL"
+                        Action="setValue"
+                        ElementPath="/config/peertube/url"
+                        Value="[PEERTUBE_URL]"
+                        File="[#ConfigJSON]"
+                        SelectionLanguage="XPath" />
+          <!-- Note: Username and password handled via environment variables, not in config -->
+        </File>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <!-- Custom UI Dialogs -->
+  <Fragment>
+    <UI Id="ConfigDialogs">
+      <!-- PeerTube Configuration Dialog -->
+      <Dialog Id="PeerTubeConfigDlg" Width="370" Height="270" Title="PeerTube Configuration">
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}PeerTube Server Settings" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="Configure your PeerTube instance connection." />
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+
+        <Control Id="URLLabel" Type="Text" X="20" Y="60" Width="290" Height="13" NoPrefix="yes" Text="PeerTube Server URL:" />
+        <Control Id="URLEdit" Type="Edit" X="20" Y="73" Width="290" Height="18" Property="PEERTUBE_URL" />
+
+        <Control Id="UsernameLabel" Type="Text" X="20" Y="95" Width="290" Height="13" NoPrefix="yes" Text="Username:" />
+        <Control Id="UsernameEdit" Type="Edit" X="20" Y="108" Width="290" Height="18" Property="PEERTUBE_USERNAME" />
+
+        <Control Id="PasswordLabel" Type="Text" X="20" Y="130" Width="290" Height="13" NoPrefix="yes" Text="Password:" />
+        <Control Id="PasswordEdit" Type="Edit" X="20" Y="143" Width="290" Height="18" Property="PEERTUBE_PASSWORD" Password="yes" />
+
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="!(loc.WixUINext)">
+          <Publish Event="NewDialog" Value="FolderConfigDlg">1</Publish>
+        </Control>
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="!(loc.WixUIBack)">
+          <Publish Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+      </Dialog>
+
+      <!-- Folder Configuration Dialog -->
+      <Dialog Id="FolderConfigDlg" Width="370" Height="270" Title="Folder Configuration">
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Folder Settings" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="Configure folders for video monitoring." />
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+
+        <Control Id="WatchLabel" Type="Text" X="20" Y="60" Width="290" Height="13" NoPrefix="yes" Text="Watch Folder (where new videos appear):" />
+        <Control Id="WatchEdit" Type="Edit" X="20" Y="73" Width="290" Height="18" Property="WATCH_PATH" />
+
+        <Control Id="DoneLabel" Type="Text" X="20" Y="95" Width="290" Height="13" NoPrefix="yes" Text="Done Folder (successful uploads):" />
+        <Control Id="DoneEdit" Type="Edit" X="20" Y="108" Width="290" Height="18" Property="DONE_PATH" />
+
+        <Control Id="FailedLabel" Type="Text" X="20" Y="130" Width="290" Height="13" NoPrefix="yes" Text="Failed Folder (failed uploads):" />
+        <Control Id="FailedEdit" Type="Edit" X="20" Y="143" Width="290" Height="18" Property="FAILED_PATH" />
+
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="!(loc.WixUINext)">
+          <Publish Event="NewDialog" Value="VideoConfigDlg">1</Publish>
+        </Control>
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="!(loc.WixUIBack)">
+          <Publish Event="NewDialog" Value="PeerTubeConfigDlg">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+      </Dialog>
+
+      <!-- Video Defaults Configuration Dialog -->
+      <Dialog Id="VideoConfigDlg" Width="370" Height="300" Title="Video Defaults">
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Video Upload Defaults" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="Configure default settings for uploaded videos." />
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+
+        <Control Id="CategoryLabel" Type="Text" X="20" Y="60" Width="140" Height="13" NoPrefix="yes" Text="Category (number):" />
+        <Control Id="CategoryEdit" Type="Edit" X="20" Y="73" Width="60" Height="18" Property="VIDEO_CATEGORY" />
+
+        <Control Id="LicenceLabel" Type="Text" X="190" Y="60" Width="140" Height="13" NoPrefix="yes" Text="Licence (number):" />
+        <Control Id="LicenceEdit" Type="Edit" X="190" Y="73" Width="60" Height="18" Property="VIDEO_LICENCE" />
+
+        <Control Id="LanguageLabel" Type="Text" X="20" Y="95" Width="140" Height="13" NoPrefix="yes" Text="Language (code):" />
+        <Control Id="LanguageEdit" Type="Edit" X="20" Y="108" Width="60" Height="18" Property="VIDEO_LANGUAGE" />
+
+        <Control Id="PrivacyLabel" Type="Text" X="190" Y="95" Width="140" Height="13" NoPrefix="yes" Text="Privacy (1=Public):" />
+        <Control Id="PrivacyEdit" Type="Edit" X="190" Y="108" Width="60" Height="18" Property="VIDEO_PRIVACY" />
+
+        <Control Id="DescLabel" Type="Text" X="20" Y="130" Width="290" Height="13" NoPrefix="yes" Text="Description:" />
+        <Control Id="DescEdit" Type="Edit" X="20" Y="143" Width="290" Height="18" Property="VIDEO_DESCRIPTION" />
+
+        <Control Id="CommentsCheck" Type="CheckBox" X="20" Y="168" Width="140" Height="17" Property="COMMENTS_ENABLED" CheckBoxValue="1" Text="Enable Comments" />
+        <Control Id="DownloadCheck" Type="CheckBox" X="190" Y="168" Width="140" Height="17" Property="DOWNLOAD_ENABLED" CheckBoxValue="1" Text="Enable Downloads" />
+
+        <Control Id="SettleLabel" Type="Text" X="20" Y="190" Width="140" Height="13" NoPrefix="yes" Text="Settle Time (seconds):" />
+        <Control Id="SettleEdit" Type="Edit" X="20" Y="203" Width="60" Height="18" Property="SETTLE_TIME" />
+
+        <Control Id="RetriesLabel" Type="Text" X="190" Y="190" Width="140" Height="13" NoPrefix="yes" Text="Max Retries:" />
+        <Control Id="RetriesEdit" Type="Edit" X="190" Y="203" Width="60" Height="18" Property="MAX_RETRIES" />
+
+        <Control Id="BottomLine" Type="Line" X="0" Y="264" Width="370" Height="0" />
+        <Control Id="Next" Type="PushButton" X="236" Y="273" Width="56" Height="17" Default="yes" Text="!(loc.WixUINext)">
+          <Publish Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+        </Control>
+        <Control Id="Back" Type="PushButton" X="180" Y="273" Width="56" Height="17" Text="!(loc.WixUIBack)">
+          <Publish Event="NewDialog" Value="FolderConfigDlg">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="273" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+      </Dialog>
+
+      <!-- Insert custom dialogs into dialog sequence -->
+      <InstallUISequence>
+        <Show Dialog="PeerTubeConfigDlg" After="LicenseAgreementDlg">NOT Installed</Show>
+        <Show Dialog="FolderConfigDlg" After="PeerTubeConfigDlg">NOT Installed</Show>
+        <Show Dialog="VideoConfigDlg" After="FolderConfigDlg">NOT Installed</Show>
+      </InstallUISequence>
+    </UI>
+  </Fragment>
+
+  <!-- Custom Action to generate config.json from template -->
+  <Fragment>
+    <CustomAction Id="GenerateConfigFile"
+                  Script="vbscript"
+                  Execute="deferred"
+                  Impersonate="no">
+      <![CDATA[
+      Dim fso, configFile, jsonContent
+      Set fso = CreateObject("Scripting.FileSystemObject")
+
+      jsonContent = "{" & vbCrLf & _
+        "  ""peertube"": {" & vbCrLf & _
+        "    ""url"": """ & Session.Property("CustomActionData") & """," & vbCrLf & _
+        "    ""username"": """"," & vbCrLf & _
+        "    ""password"": """"," & vbCrLf & _
+        "    ""defaults"": {" & vbCrLf & _
+        "      ""category"": " & Session.Property("VIDEO_CATEGORY") & "," & vbCrLf & _
+        "      ""licence"": " & Session.Property("VIDEO_LICENCE") & "," & vbCrLf & _
+        "      ""language"": """ & Session.Property("VIDEO_LANGUAGE") & """," & vbCrLf & _
+        "      ""privacy"": " & Session.Property("VIDEO_PRIVACY") & "," & vbCrLf & _
+        "      ""description"": """ & Session.Property("VIDEO_DESCRIPTION") & """," & vbCrLf & _
+        "      ""tags"": []," & vbCrLf & _
+        "      ""downloadEnabled"": " & LCase(CBool(Session.Property("DOWNLOAD_ENABLED"))) & "," & vbCrLf & _
+        "      ""commentsEnabled"": " & LCase(CBool(Session.Property("COMMENTS_ENABLED"))) & "," & vbCrLf & _
+        "      ""waitTranscoding"": " & LCase(CBool(Session.Property("WAIT_TRANSCODING"))) & "," & vbCrLf & _
+        "      ""nsfw"": " & LCase(CBool(Session.Property("NSFW"))) & vbCrLf & _
+        "    }" & vbCrLf & _
+        "  }," & vbCrLf & _
+        "  ""watcher"": {" & vbCrLf & _
+        "    ""watchPath"": """ & Replace(Session.Property("WATCH_PATH"), "\", "\\") & """," & vbCrLf & _
+        "    ""donePath"": """ & Replace(Session.Property("DONE_PATH"), "\", "\\") & """," & vbCrLf & _
+        "    ""failedPath"": """ & Replace(Session.Property("FAILED_PATH"), "\", "\\") & """," & vbCrLf & _
+        "    ""videoExtensions"": ["".mp4"", "".webm"", "".mkv"", "".avi"", "".mov"", "".flv""]," & vbCrLf & _
+        "    ""settleTime"": " & Session.Property("SETTLE_TIME") & "," & vbCrLf & _
+        "    ""maxRetries"": " & Session.Property("MAX_RETRIES") & vbCrLf & _
+        "  }," & vbCrLf & _
+        "  ""logging"": {" & vbCrLf & _
+        "    ""logFile"": ""peertube-monitor.log""," & vbCrLf & _
+        "    ""verbose"": true" & vbCrLf & _
+        "  }" & vbCrLf & _
+        "}"
+
+      Set configFile = fso.CreateTextFile(Session.Property("INSTALLFOLDER") & "config.json", True)
+      configFile.Write jsonContent
+      configFile.Close
+      ]]>
+    </CustomAction>
+
+    <InstallExecuteSequence>
+      <Custom Action="GenerateConfigFile" After="InstallFiles">NOT Installed</Custom>
+    </InstallExecuteSequence>
+  </Fragment>
+
+</Wix>
