@@ -70,17 +70,12 @@ Write-Host "`nStep 3: Building MSI installer..." -ForegroundColor Yellow
 
 Push-Location $InstallerDir
 try {
-    & dotnet build installer.wixproj -c Release -o $BuildDir -p:DefineConstants="ProductVersion=$Version.0"
+    # Call wix build directly instead of using MSBuild/SDK
+    & wix build -arch x64 -out "$OutputMsi" Product.wxs
 
     if ($LASTEXITCODE -ne 0) {
         Write-Error "MSI build failed with exit code $LASTEXITCODE"
         exit 1
-    }
-
-    # Rename output to include version
-    $DefaultMsi = Join-Path $BuildDir "PeerTubeMonitor.msi"
-    if (Test-Path $DefaultMsi) {
-        Move-Item -Path $DefaultMsi -Destination $OutputMsi -Force
     }
 
     Write-Host "  ✓ MSI created: $OutputMsi" -ForegroundColor Green
