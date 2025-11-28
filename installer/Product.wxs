@@ -10,7 +10,7 @@
 
     <StandardDirectory Id="ProgramFiles64Folder">
       <Directory Id="INSTALLFOLDER" Name="PeerTube Monitor">
-        <Component Id="MainComponent">
+        <Component Id="MainComponent" Guid="F5E8D3C2-4B1A-4D6E-8F7A-9B0C1D2E3F4B">
           <File Source="..\peertube-monitor.exe" />
           <File Source="..\configs\config.example.json" Name="config.json" />
           <File Source="..\installer\README.txt" />
