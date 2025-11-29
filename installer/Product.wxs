@@ -71,7 +71,19 @@
     <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
 
     <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT"
-              Value="Installation complete! IMPORTANT: Before starting the service, edit config.json in C:\ProgramData\PeerTube Monitor\ to configure your PeerTube server and folder paths. See README.txt for detailed instructions." />
+              Value="Installation complete! Click Finish to open the configuration folder. IMPORTANT: Edit config.json to configure your PeerTube server and folder paths before starting the service." />
+
+    <Property Id="WixShellExecTarget" Value="[CONFIGFOLDER]" />
+
+    <CustomAction Id="LaunchConfigFolder"
+                  BinaryRef="Wix4UtilCA_X64"
+                  DllEntry="WixShellExec"
+                  Impersonate="yes"
+                  Return="ignore" />
+
+    <InstallExecuteSequence>
+      <Custom Action="LaunchConfigFolder" Before="InstallFinalize" Condition="NOT Installed" />
+    </InstallExecuteSequence>
 
   </Package>
 </Wix>
