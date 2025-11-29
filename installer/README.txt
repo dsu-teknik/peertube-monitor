@@ -3,6 +3,12 @@ PeerTube Monitor – Post-Installation Setup
 
 REQUIRED: Configure before starting the service!
 
+IMPORTANT - If reinstalling after a failed installation:
+Run PowerShell as Administrator and execute:
+  sc.exe stop PeerTubeMonitor
+  sc.exe delete PeerTubeMonitor
+Then run the installer again.
+
 QUICK START:
 
 1. Edit: C:\ProgramData\PeerTube Monitor\config.json

@@ -35,22 +35,6 @@
       </Directory>
     </StandardDirectory>
 
-    <SetProperty Id="WixQuietExec64CmdLine"
-                 Value="&quot;[SystemFolder]sc.exe&quot; stop PeerTubeMonitor &amp; &quot;[SystemFolder]sc.exe&quot; delete PeerTubeMonitor"
-                 Before="CleanupOrphanedService"
-                 Sequence="execute"
-                 Condition="NOT Installed" />
-
-    <CustomAction Id="CleanupOrphanedService"
-                  BinaryRef="Wix4UtilCA_X64"
-                  DllEntry="WixQuietExec64"
-                  Execute="deferred"
-                  Impersonate="no"
-                  Return="ignore" />
-
-    <InstallExecuteSequence>
-      <Custom Action="CleanupOrphanedService" After="InstallInitialize" Condition="NOT Installed" />
-    </InstallExecuteSequence>
 
     <StandardDirectory Id="CommonAppDataFolder">
       <Directory Id="CONFIGFOLDER" Name="PeerTube Monitor">
@@ -71,7 +55,7 @@
     <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
 
     <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT"
-              Value="Installation complete! Click Finish to open the configuration folder. IMPORTANT: Edit config.json to configure your PeerTube server and folder paths before starting the service." />
+              Value="Installation complete! The configuration folder will open when you click Finish. Edit config.json to configure your PeerTube server and folder paths, then start the PeerTube Monitor service from services.msc." />
 
     <Property Id="WixShellExecTarget" Value="[CONFIGFOLDER]" />
 
