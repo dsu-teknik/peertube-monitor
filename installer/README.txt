@@ -1,27 +1,22 @@
-PeerTube Monitor - Post-Installation Setup
-==========================================
+PeerTube Monitor – Post-Installation Setup
+===========================================
 
-The PeerTube Monitor service has been installed but requires configuration before it will start successfully.
+REQUIRED: Configure before starting the service!
 
-CONFIGURATION STEPS:
+QUICK START:
 
-1. Edit the configuration file:
-   C:\Program Files\PeerTube Monitor\config.json
+1. Edit: C:\Program Files\PeerTube Monitor\config.json
+   - Set your PeerTube server URL, username, and password
+   - Set watch, done, and failed folder paths
+   - Adjust video upload defaults (category, licence, language, privacy)
 
-2. Update the following settings:
-   - PeerTube server URL, username, and password
-   - Watch, done, and failed folder paths
-   - Video upload defaults (category, licence, language, privacy)
+2. Create the folders you specified in config.json
+   (The service will NOT create them automatically)
 
-3. Create the folders specified in the configuration:
-   - Watch folder (where you'll drop videos)
-   - Done folder (for successful uploads)
-   - Failed folder (for failed uploads)
-
-4. Start the service:
-   - Open Services (services.msc)
+3. Start the service:
+   - Press Win+R, type: services.msc
    - Find "PeerTube Monitor"
-   - Right-click and select "Start"
+   - Right-click → Start
 
 ALTERNATIVE: Use Environment Variables for Credentials
 

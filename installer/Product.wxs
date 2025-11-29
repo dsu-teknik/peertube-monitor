@@ -38,5 +38,22 @@
       <ComponentRef Id="MainComponent" />
     </Feature>
 
+    <UI>
+      <UIRef Id="WixUI_Minimal" />
+      <Publish Dialog="ExitDialog"
+               Control="Finish"
+               Event="DoAction"
+               Value="LaunchFile">WIXUI_EXITDIALOGOPTIONALTEXT = "1"</Publish>
+    </UI>
+
+    <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT"
+              Value="Installation complete! IMPORTANT: Before starting the service, you must edit config.json to configure your PeerTube server and folder paths. See README.txt for details." />
+
+    <Property Id="WixShellExecTarget" Value="[INSTALLFOLDER]README.txt" />
+    <CustomAction Id="LaunchFile"
+                  BinaryRef="Wix4UtilCA_X64"
+                  DllEntry="WixShellExec"
+                  Impersonate="yes" />
+
   </Package>
 </Wix>
