@@ -49,44 +49,55 @@ func main() {
         cfg.PeerTube.Password,
     )
 
-    // Test authentication
-    logger.Printf("Authenticating with PeerTube server: %s", cfg.PeerTube.URL)
-    if err := client.Authenticate(); err != nil {
-        log.Fatalf("Authentication failed: %v", err)
-    }
-    logger.Printf("Authentication successful")
+    // Validate credentials are configured
+    if cfg.PeerTube.URL == "" || cfg.PeerTube.Username == "" || cfg.PeerTube.Password == "" {
+        logger.Printf("WARNING: PeerTube credentials not configured!")
+        logger.Printf("Please edit config file and restart service")
+        logger.Printf("Config location: %s", *configPath)
+    } else {
+        // Test authentication only if credentials are provided
+        logger.Printf("Authenticating with PeerTube server: %s", cfg.PeerTube.URL)
+        if err := client.Authenticate(); err != nil {
+            logger.Printf("WARNING: Authentication failed: %v", err)
+            logger.Printf("Service will start but uploads will fail until credentials are fixed")
+        } else {
+            logger.Printf("Authentication successful")
 
-    // Fetch metadata from PeerTube
-    logger.Printf("Fetching video metadata from PeerTube server...")
-    metadata, err := client.FetchMetadata()
-    if err != nil {
-        log.Fatalf("Failed to fetch metadata: %v", err)
-    }
+            // Fetch metadata from PeerTube
+            logger.Printf("Fetching video metadata from PeerTube server...")
+            metadata, err := client.FetchMetadata()
+            if err != nil {
+                logger.Printf("WARNING: Failed to fetch metadata: %v", err)
+                logger.Printf("Will use default values from config")
+            } else {
+                logger.Printf("Available categories: %d options", len(metadata.Categories))
+                if cfg.Logging.Verbose {
+                    logSortedMetadata(logger, metadata.Categories)
+                }
 
-    logger.Printf("Available categories: %d options", len(metadata.Categories))
-    if cfg.Logging.Verbose {
-        logSortedMetadata(logger, metadata.Categories)
-    }
+                logger.Printf("Available licences: %d options", len(metadata.Licences))
+                if cfg.Logging.Verbose {
+                    logSortedMetadata(logger, metadata.Licences)
+                }
 
-    logger.Printf("Available licences: %d options", len(metadata.Licences))
-    if cfg.Logging.Verbose {
-        logSortedMetadata(logger, metadata.Licences)
-    }
+                logger.Printf("Available privacy levels: %d options", len(metadata.Privacies))
+                if cfg.Logging.Verbose {
+                    logSortedMetadata(logger, metadata.Privacies)
+                }
 
-    logger.Printf("Available privacy levels: %d options", len(metadata.Privacies))
-    if cfg.Logging.Verbose {
-        logSortedMetadata(logger, metadata.Privacies)
+                // Resolve metadata in config
+                if err := cfg.ResolveMetadata(metadata.Categories, metadata.Licences, metadata.Privacies); err != nil {
+                    logger.Printf("WARNING: Invalid configuration: %v", err)
+                    logger.Printf("Will use raw values from config")
+                } else {
+                    logger.Printf("Video defaults: category=%q, licence=%q, privacy=%q",
+                        metadata.Categories[fmt.Sprintf("%d", cfg.PeerTube.Defaults.Category)],
+                        metadata.Licences[fmt.Sprintf("%d", cfg.PeerTube.Defaults.Licence)],
+                        metadata.Privacies[fmt.Sprintf("%d", cfg.PeerTube.Defaults.Privacy)])
+                }
+            }
+        }
     }
-
-    // Resolve metadata in config
-    if err := cfg.ResolveMetadata(metadata.Categories, metadata.Licences, metadata.Privacies); err != nil {
-        log.Fatalf("Invalid configuration: %v", err)
-    }
-
-    logger.Printf("Video defaults: category=%q, licence=%q, privacy=%q",
-        metadata.Categories[fmt.Sprintf("%d", cfg.PeerTube.Defaults.Category)],
-        metadata.Licences[fmt.Sprintf("%d", cfg.PeerTube.Defaults.Licence)],
-        metadata.Privacies[fmt.Sprintf("%d", cfg.PeerTube.Defaults.Privacy)])
 
     // Create upload handler
     handler := watcher.NewUploadHandler(client, cfg, logger)
