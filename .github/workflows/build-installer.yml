@@ -57,7 +57,7 @@ jobs:
       - name: Build executable
         run: |
           go mod tidy
-          go build -o peertube-monitor.exe ./cmd/monitor
+          go build -ldflags "-X main.version=v${{ steps.version.outputs.VERSION }}" -o peertube-monitor.exe ./cmd/monitor
 
       - name: Build MSI installer
         shell: pwsh
