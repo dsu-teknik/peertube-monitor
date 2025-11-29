@@ -5,9 +5,7 @@ import (
     "fmt"
     "log"
     "os"
-    "os/signal"
     "sort"
-    "syscall"
 
     "github.com/dsu-teknik/peertube-monitor/pkg/config"
     "github.com/dsu-teknik/peertube-monitor/pkg/peertube"
@@ -18,6 +16,8 @@ const version = "1.0.0"
 
 func main() {
     configPath := flag.String("config", "config.json", "Path to configuration file")
+    logFile := flag.String("log", "", "Path to log file (default: stdout)")
+    verbose := flag.Bool("verbose", false, "Enable verbose logging")
     showVersion := flag.Bool("version", false, "Show version information")
     flag.Parse()
 
@@ -37,7 +37,7 @@ func main() {
     }
 
     // Setup logging
-    logger := setupLogger(cfg)
+    logger := setupLogger(*logFile, *verbose)
     logger.Printf("PeerTube Monitor v%s starting...", version)
     logger.Printf("Configuration loaded from: %s", *configPath)
     logger.Printf("Credentials loaded from: %s", cfg.GetCredentialSource())
@@ -71,17 +71,17 @@ func main() {
                 logger.Printf("Will use default values from config")
             } else {
                 logger.Printf("Available categories: %d options", len(metadata.Categories))
-                if cfg.Logging.Verbose {
+                if *verbose {
                     logSortedMetadata(logger, metadata.Categories)
                 }
 
                 logger.Printf("Available licences: %d options", len(metadata.Licences))
-                if cfg.Logging.Verbose {
+                if *verbose {
                     logSortedMetadata(logger, metadata.Licences)
                 }
 
                 logger.Printf("Available privacy levels: %d options", len(metadata.Privacies))
-                if cfg.Logging.Verbose {
+                if *verbose {
                     logSortedMetadata(logger, metadata.Privacies)
                 }
 
@@ -127,29 +127,18 @@ func main() {
         logger.Printf("Failed action: Rename with .failed extension")
     }
 
-    // Handle graceful shutdown
-    sigChan := make(chan os.Signal, 1)
-    signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-
-    go func() {
-        <-sigChan
-        logger.Printf("Shutdown signal received, stopping...")
-        w.Stop()
-        os.Exit(0)
-    }()
-
-    // Start watching
-    if err := w.Start(); err != nil {
-        log.Fatalf("Watcher error: %v", err)
+    // Run service (platform-specific implementation)
+    if err := runService(w, logger); err != nil {
+        log.Fatalf("Service error: %v", err)
     }
 }
 
-func setupLogger(cfg *config.Config) *log.Logger {
+func setupLogger(logFile string, verbose bool) *log.Logger {
     var output *os.File
 
-    if cfg.Logging.LogFile != "" {
+    if logFile != "" {
         var err error
-        output, err = os.OpenFile(cfg.Logging.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+        output, err = os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
         if err != nil {
             log.Fatalf("Failed to open log file: %v", err)
         }
@@ -160,7 +149,7 @@ func setupLogger(cfg *config.Config) *log.Logger {
 
     logger := log.New(output, "", log.LstdFlags)
 
-    if cfg.Logging.Verbose {
+    if verbose {
         logger.SetFlags(log.LstdFlags | log.Lshortfile)
     }
 

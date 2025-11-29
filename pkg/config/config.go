@@ -11,7 +11,6 @@ import (
 type Config struct {
     PeerTube PeerTubeConfig `json:"peertube"`
     Watcher  WatcherConfig  `json:"watcher"`
-    Logging  LoggingConfig  `json:"logging"`
 }
 
 type PeerTubeConfig struct {
@@ -47,11 +46,6 @@ type WatcherConfig struct {
     VideoExtensions []string `json:"videoExtensions"`
     SettleTime     int      `json:"settleTime"` // seconds to wait for file to stop changing
     MaxRetries     int      `json:"maxRetries"`
-}
-
-type LoggingConfig struct {
-    LogFile  string `json:"logFile"`
-    Verbose  bool   `json:"verbose"`
 }
 
 func Load(path string) (*Config, error) {

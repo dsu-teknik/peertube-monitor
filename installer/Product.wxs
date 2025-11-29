@@ -23,7 +23,7 @@
             Start="auto"
             Account="LocalSystem"
             ErrorControl="normal"
-            Arguments='-config "[CommonAppDataFolder]PeerTube Monitor\config.json"' />
+            Arguments='-config "[CommonAppDataFolder]PeerTube Monitor\config.json" -log "[CommonAppDataFolder]PeerTube Monitor\peertube-monitor.log"' />
 
           <ServiceControl
             Id="StopService"

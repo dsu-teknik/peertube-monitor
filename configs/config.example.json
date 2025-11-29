@@ -24,9 +24,5 @@
     "videoExtensions": [".mp4", ".webm", ".mkv", ".avi", ".mov", ".flv"],
     "settleTime": 5,
     "maxRetries": 3
-  },
-  "logging": {
-    "logFile": "peertube-monitor.log",
-    "verbose": true
   }
 }
