@@ -77,7 +77,8 @@ Write-Host "`nStep 3: Building MSI installer..." -ForegroundColor Yellow
 Push-Location $InstallerDir
 try {
     # Call wix build directly instead of using MSBuild/SDK
-    & wix build -arch x64 -ext WixToolset.UI.wixext -out "$OutputMsi" Product.wxs
+    # Pass version as a preprocessor variable
+    & wix build -arch x64 -ext WixToolset.UI.wixext -d ProductVersion="$Version" -out "$OutputMsi" Product.wxs
 
     if ($LASTEXITCODE -ne 0) {
         Write-Error "MSI build failed with exit code $LASTEXITCODE"

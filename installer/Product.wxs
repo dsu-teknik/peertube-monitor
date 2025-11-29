@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?define ProductVersion = "1.0.0.0" ?>
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
      xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package Name="PeerTube Monitor"
            Manufacturer="DSU Teknik"
-           Version="1.0.0.0"
+           Version="$(var.ProductVersion)"
            UpgradeCode="A8F3D2E1-4B5C-4D6E-8F7A-9B0C1D2E3F4A">
 
     <MajorUpgrade DowngradeErrorMessage="A newer version is already installed." />
@@ -26,13 +27,34 @@
             Arguments='-config "[CommonAppDataFolder]PeerTube Monitor\config.json"' />
 
           <ServiceControl
-            Id="StartService"
+            Id="StopService"
             Name="PeerTubeMonitor"
             Stop="both"
+            Wait="yes"
             Remove="uninstall" />
         </Component>
       </Directory>
     </StandardDirectory>
+
+    <CustomAction Id="CleanupOrphanedService"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="ignore"
+                  Script="vbscript">
+      <![CDATA[
+      On Error Resume Next
+      Set objWMI = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
+      Set colServices = objWMI.ExecQuery("SELECT * FROM Win32_Service WHERE Name = 'PeerTubeMonitor'")
+      For Each objService in colServices
+        objService.StopService()
+        objService.Delete()
+      Next
+      ]]>
+    </CustomAction>
+
+    <InstallExecuteSequence>
+      <Custom Action="CleanupOrphanedService" Before="InstallValidate" />
+    </InstallExecuteSequence>
 
     <StandardDirectory Id="CommonAppDataFolder">
       <Directory Id="CONFIGFOLDER" Name="PeerTube Monitor">
