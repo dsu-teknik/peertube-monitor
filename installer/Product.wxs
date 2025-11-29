@@ -48,7 +48,7 @@
                   Return="ignore" />
 
     <InstallExecuteSequence>
-      <Custom Action="CleanupOrphanedService" Before="InstallValidate">NOT Installed</Custom>
+      <Custom Action="CleanupOrphanedService" Before="InstallValidate" Condition="NOT Installed" />
     </InstallExecuteSequence>
 
     <StandardDirectory Id="CommonAppDataFolder">
