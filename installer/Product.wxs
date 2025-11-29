@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package Name="PeerTube Monitor"
            Manufacturer="DSU Teknik"
            Version="1.0.0.0"
@@ -38,9 +39,7 @@
       <ComponentRef Id="MainComponent" />
     </Feature>
 
-    <UI>
-      <UIRef Id="WixUI_Minimal" />
-    </UI>
+    <ui:WixUI Id="WixUI_Minimal" />
 
     <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT"
               Value="Installation complete! IMPORTANT: Before starting the service, you must edit config.json to configure your PeerTube server and folder paths. See README.txt in the installation folder for detailed instructions." />
