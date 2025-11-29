@@ -33,7 +33,9 @@ jobs:
           dotnet-version: '8.0'
 
       - name: Install WiX
-        run: dotnet tool install --global wix
+        run: |
+          dotnet tool install --global wix
+          wix extension add WixToolset.UI.wixext --global
 
       - name: Determine version
         id: version

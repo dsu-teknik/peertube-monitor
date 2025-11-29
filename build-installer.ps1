@@ -52,7 +52,8 @@ try {
     $wixVersion = & dotnet tool list -g | Select-String "wix"
     if ($wixVersion) {
         Write-Host "  ✓ WiX Toolset found: $wixVersion" -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Host "  ! WiX not found, installing..." -ForegroundColor Yellow
         & dotnet tool install --global wix
         if ($LASTEXITCODE -ne 0) {
@@ -60,7 +61,12 @@ try {
             exit 1
         }
     }
-} catch {
+
+    # Add UI extension to WiX cache (required for v6)
+    Write-Host "  Adding WiX UI extension..." -ForegroundColor Yellow
+    & wix extension add WixToolset.UI.wixext --global 2>$null
+}
+catch {
     Write-Error "Failed to check/install WiX Toolset: $_"
     exit 1
 }
