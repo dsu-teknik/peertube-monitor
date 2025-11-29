@@ -35,12 +35,13 @@
       </Directory>
     </StandardDirectory>
 
-    <SetProperty Id="CleanupOrphanedService"
-                 Value="&quot;sc.exe&quot; stop PeerTubeMonitor &amp; &quot;sc.exe&quot; delete PeerTubeMonitor"
+    <SetProperty Id="QtExecCleanupService"
+                 Value="&quot;[SystemFolder]sc.exe&quot; stop PeerTubeMonitor &amp; &quot;[SystemFolder]sc.exe&quot; delete PeerTubeMonitor"
                  Before="CleanupOrphanedService"
                  Sequence="execute" />
 
     <CustomAction Id="CleanupOrphanedService"
+                  Property="QtExecCleanupService"
                   BinaryRef="Wix4UtilCA_X64"
                   DllEntry="WixQuietExec64"
                   Execute="deferred"
@@ -48,7 +49,7 @@
                   Return="ignore" />
 
     <InstallExecuteSequence>
-      <Custom Action="CleanupOrphanedService" Before="InstallValidate" Condition="NOT Installed" />
+      <Custom Action="CleanupOrphanedService" After="InstallInitialize" Condition="NOT Installed" />
     </InstallExecuteSequence>
 
     <StandardDirectory Id="CommonAppDataFolder">
