@@ -15,8 +15,10 @@ go mod tidy
 # Build for current platform (version will be "dev")
 go build -o peertube-monitor ./cmd/monitor
 
-# Build with version from git tags
-go build -ldflags "-X main.version=$(git describe --tags --always)" -o peertube-monitor ./cmd/monitor
+# Build with version and commit from git
+VERSION=$(git describe --tags --always)
+COMMIT=$(git rev-parse --short HEAD)
+go build -ldflags "-X main.version=$VERSION -X main.commit=$COMMIT" -o peertube-monitor ./cmd/monitor
 
 # Build for Windows from Linux
 GOOS=windows GOARCH=amd64 go build -o peertube-monitor.exe ./cmd/monitor

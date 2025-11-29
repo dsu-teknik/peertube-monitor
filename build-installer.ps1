@@ -46,7 +46,18 @@ if (-not $SkipBuild) {
 
     $ExePath = Join-Path $ProjectRoot "peertube-monitor.exe"
 
-    & go build -ldflags "-s -w -X main.version=$Version" -o $ExePath "$ProjectRoot\cmd\monitor"
+    # Get git commit hash
+    try {
+        $Commit = & git rev-parse --short HEAD 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            $Commit = "unknown"
+        }
+    }
+    catch {
+        $Commit = "unknown"
+    }
+
+    & go build -ldflags "-s -w -X main.version=$Version -X main.commit=$Commit" -o $ExePath "$ProjectRoot\cmd\monitor"
 
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Go build failed with exit code $LASTEXITCODE"
