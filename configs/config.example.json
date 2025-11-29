@@ -1,6 +1,6 @@
 {
   "peertube": {
-    "url": "https://peertube.sandum.net",
+    "url": "https://peertube.example.com",
     "username": "",
     "password": "",
     "defaults": {

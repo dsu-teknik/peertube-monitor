@@ -3,12 +3,25 @@
 # Requires: Go 1.21+, WiX Toolset v5+
 
 param(
-    [string]$Version = "1.0.0",
+    [string]$Version = "",
     [switch]$SkipBuild,
     [switch]$Sign
 )
 
 $ErrorActionPreference = "Stop"
+
+# Get version from git if not specified
+if ([string]::IsNullOrEmpty($Version)) {
+    try {
+        $Version = & git describe --tags --always --dirty 2>$null
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrEmpty($Version)) {
+            $Version = "dev"
+        }
+    }
+    catch {
+        $Version = "dev"
+    }
+}
 
 # Configuration
 $ProjectRoot = $PSScriptRoot
@@ -33,7 +46,7 @@ if (-not $SkipBuild) {
 
     $ExePath = Join-Path $ProjectRoot "peertube-monitor.exe"
 
-    & go build -ldflags "-s -w" -o $ExePath "$ProjectRoot\cmd\monitor"
+    & go build -ldflags "-s -w -X main.version=$Version" -o $ExePath "$ProjectRoot\cmd\monitor"
 
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Go build failed with exit code $LASTEXITCODE"

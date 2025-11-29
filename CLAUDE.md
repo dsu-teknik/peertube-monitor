@@ -12,17 +12,23 @@ PeerTube Monitor is an automatic video uploader for PeerTube. It monitors a fold
 # Download dependencies
 go mod tidy
 
-# Build for current platform
+# Build for current platform (version will be "dev")
 go build -o peertube-monitor ./cmd/monitor
+
+# Build with version from git tags
+go build -ldflags "-X main.version=$(git describe --tags --always)" -o peertube-monitor ./cmd/monitor
 
 # Build for Windows from Linux
 GOOS=windows GOARCH=amd64 go build -o peertube-monitor.exe ./cmd/monitor
 
-# Run with default config.json
+# Run with default config.json (logs to stdout)
 ./peertube-monitor
 
-# Run with custom config
-./peertube-monitor -config /path/to/config.json
+# Run with custom config and log file
+./peertube-monitor -config /path/to/config.json -log /path/to/monitor.log
+
+# Run with verbose logging
+./peertube-monitor -verbose
 
 # Show version
 ./peertube-monitor -version
@@ -38,7 +44,7 @@ The project includes a WiX Toolset installer for Windows deployments.
 
 **Build MSI installer:**
 ```powershell
-# Build with default version (1.0.0)
+# Build with version from git tags
 ./build-installer.ps1
 
 # Build with custom version
@@ -49,17 +55,10 @@ The project includes a WiX Toolset installer for Windows deployments.
 ```
 
 **Installer Features:**
-- Guided UI for all configuration parameters during installation
-- Automatic Windows service installation and startup
-- Credentials stored in service environment variables (not in config file)
-- Creates config.json with all settings from installation wizard
-- Folders are created by the service on first run
-
-**Installation dialogs:**
-1. PeerTube server URL, username, and password
-2. Watch, done, and failed folder paths
-3. Video upload defaults (category, licence, language, privacy, description)
-4. Advanced settings (settle time, max retries, comments/downloads enabled)
+- Automatic Windows service installation
+- Creates config.json in ProgramData folder (opened automatically after installation)
+- Service configured with log file in ProgramData folder
+- Service starts automatically on system boot (after manual configuration)
 
 **Manual installation/uninstallation:**
 ```powershell
@@ -95,8 +94,10 @@ The application follows a clean architecture with three main packages:
 
 ### cmd/monitor
 - Application entry point in main.go
+- Platform-specific service integration (Windows SCM support, Unix signal handling)
 - Orchestrates configuration loading, PeerTube authentication, watcher setup, and graceful shutdown
-- Logging setup (file or stdout, with optional verbose mode)
+- Logging configured via command-line flags (-log for file output, -verbose for detailed logs)
+- Prints startup banner to stderr for visibility
 
 ## Key Flows
 
@@ -117,10 +118,11 @@ The application follows a clean architecture with three main packages:
 
 ## Configuration Structure
 
-All configuration is in a single JSON file with three sections:
+All configuration is in a single JSON file with two sections:
 - `peertube`: PeerTube instance URL, credentials, and video upload defaults
 - `watcher`: File paths, extensions to monitor, settle time, and retry settings
-- `logging`: Log file path and verbosity
+
+Logging is configured via command-line flags (-log and -verbose), not in the config file.
 
 Environment variables take precedence over config file values for credentials (recommended for service deployments).
 

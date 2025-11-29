@@ -12,7 +12,7 @@ import (
     "github.com/dsu-teknik/peertube-monitor/pkg/watcher"
 )
 
-const version = "1.0.0"
+var version = "dev"
 
 func main() {
     configPath := flag.String("config", "config.json", "Path to configuration file")
@@ -22,9 +22,12 @@ func main() {
     flag.Parse()
 
     if *showVersion {
-        fmt.Printf("PeerTube Monitor v%s\n", version)
+        fmt.Printf("PeerTube Monitor %s\n", version)
         os.Exit(0)
     }
+
+    // Print startup banner to stderr
+    fmt.Fprintf(os.Stderr, "PeerTube Monitor %s starting\n", version)
 
     // Load configuration
     cfg, err := config.Load(*configPath)
@@ -38,7 +41,7 @@ func main() {
 
     // Setup logging
     logger := setupLogger(*logFile, *verbose)
-    logger.Printf("PeerTube Monitor v%s starting...", version)
+    logger.Printf("PeerTube Monitor %s starting...", version)
     logger.Printf("Configuration loaded from: %s", *configPath)
     logger.Printf("Credentials loaded from: %s", cfg.GetCredentialSource())
 

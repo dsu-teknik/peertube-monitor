@@ -55,7 +55,7 @@
     <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
 
     <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT"
-              Value="Installation complete! The configuration folder will open when you click Finish. Edit config.json to configure your PeerTube server and folder paths, then start the PeerTube Monitor service from services.msc." />
+              Value="Installation complete! Edit config.json in the opened folder to configure your PeerTube server and folder paths, then start the PeerTube Monitor service from services.msc." />
 
     <Property Id="WixShellExecTarget" Value="[CONFIGFOLDER]" />
 
