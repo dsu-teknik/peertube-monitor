@@ -5,10 +5,14 @@ REQUIRED: Configure before starting the service!
 
 QUICK START:
 
-1. Edit: C:\Program Files\PeerTube Monitor\config.json
+1. Edit: C:\ProgramData\PeerTube Monitor\config.json
    - Set your PeerTube server URL, username, and password
    - Set watch, done, and failed folder paths
    - Adjust video upload defaults (category, licence, language, privacy)
+
+   NOTE: ProgramData is a hidden folder. To access it:
+   - Press Win+R, type: %PROGRAMDATA%\PeerTube Monitor
+   - Or enable "Show hidden files" in File Explorer
 
 2. Create the folders you specified in config.json
    (The service will NOT create them automatically)
@@ -37,7 +41,13 @@ Full documentation: https://github.com/dsu-teknik/peertube-monitor
 
 TROUBLESHOOTING:
 
-- Check logs: C:\Program Files\PeerTube Monitor\peertube-monitor.log
+- Check logs: C:\ProgramData\PeerTube Monitor\peertube-monitor.log
 - Verify config.json syntax is valid JSON
 - Ensure folders exist and are accessible
 - Check PeerTube credentials are correct
+
+FILE LOCATIONS:
+
+- Executable: C:\Program Files\PeerTube Monitor\peertube-monitor.exe
+- Config file: C:\ProgramData\PeerTube Monitor\config.json
+- Log file: C:\ProgramData\PeerTube Monitor\peertube-monitor.log

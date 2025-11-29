@@ -11,9 +11,8 @@
 
     <StandardDirectory Id="ProgramFiles64Folder">
       <Directory Id="INSTALLFOLDER" Name="PeerTube Monitor">
-        <Component Id="MainComponent" Guid="F5E8D3C2-4B1A-4D6E-8F7A-9B0C1D2E3F4B">
+        <Component Id="ExecutableComponent" Guid="F5E8D3C2-4B1A-4D6E-8F7A-9B0C1D2E3F4B">
           <File Source="..\peertube-monitor.exe" />
-          <File Source="..\configs\config.example.json" Name="config.json" />
           <File Source="..\installer\README.txt" />
 
           <ServiceInstall
@@ -24,7 +23,7 @@
             Start="auto"
             Account="LocalSystem"
             ErrorControl="normal"
-            Arguments='-config "[INSTALLFOLDER]config.json"' />
+            Arguments='-config "[CommonAppDataFolder]PeerTube Monitor\config.json"' />
 
           <ServiceControl
             Id="StartService"
@@ -35,8 +34,18 @@
       </Directory>
     </StandardDirectory>
 
+    <StandardDirectory Id="CommonAppDataFolder">
+      <Directory Id="CONFIGFOLDER" Name="PeerTube Monitor">
+        <Component Id="ConfigComponent" Guid="A1B2C3D4-5E6F-7A8B-9C0D-1E2F3A4B5C6D">
+          <File Source="..\configs\config.example.json" Name="config.json" />
+          <CreateFolder />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+
     <Feature Id="Complete">
-      <ComponentRef Id="MainComponent" />
+      <ComponentRef Id="ExecutableComponent" />
+      <ComponentRef Id="ConfigComponent" />
     </Feature>
 
     <ui:WixUI Id="WixUI_Minimal" />
@@ -44,7 +53,7 @@
     <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
 
     <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT"
-              Value="Installation complete! IMPORTANT: Before starting the service, you must edit config.json to configure your PeerTube server and folder paths. See README.txt in the installation folder for detailed instructions." />
+              Value="Installation complete! IMPORTANT: Before starting the service, edit config.json in C:\ProgramData\PeerTube Monitor\ to configure your PeerTube server and folder paths. See README.txt for detailed instructions." />
 
   </Package>
 </Wix>
