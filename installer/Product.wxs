@@ -41,6 +41,8 @@
 
     <ui:WixUI Id="WixUI_Minimal" />
 
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
     <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT"
               Value="Installation complete! IMPORTANT: Before starting the service, you must edit config.json to configure your PeerTube server and folder paths. See README.txt in the installation folder for detailed instructions." />
 
