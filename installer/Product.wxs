@@ -28,7 +28,6 @@
           <ServiceControl
             Id="StartService"
             Name="PeerTubeMonitor"
-            Start="install"
             Stop="both"
             Remove="uninstall" />
         </Component>
