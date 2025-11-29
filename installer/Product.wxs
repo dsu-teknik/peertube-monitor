@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?define ProductVersion = "1.0.0.0" ?>
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
      xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package Name="PeerTube Monitor"
@@ -36,24 +35,20 @@
       </Directory>
     </StandardDirectory>
 
+    <SetProperty Id="CleanupOrphanedService"
+                 Value="&quot;sc.exe&quot; stop PeerTubeMonitor &amp; &quot;sc.exe&quot; delete PeerTubeMonitor"
+                 Before="CleanupOrphanedService"
+                 Sequence="execute" />
+
     <CustomAction Id="CleanupOrphanedService"
+                  BinaryRef="Wix4UtilCA_X64"
+                  DllEntry="WixQuietExec64"
                   Execute="deferred"
                   Impersonate="no"
-                  Return="ignore"
-                  Script="vbscript">
-      <![CDATA[
-      On Error Resume Next
-      Set objWMI = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
-      Set colServices = objWMI.ExecQuery("SELECT * FROM Win32_Service WHERE Name = 'PeerTubeMonitor'")
-      For Each objService in colServices
-        objService.StopService()
-        objService.Delete()
-      Next
-      ]]>
-    </CustomAction>
+                  Return="ignore" />
 
     <InstallExecuteSequence>
-      <Custom Action="CleanupOrphanedService" Before="InstallValidate" />
+      <Custom Action="CleanupOrphanedService" Before="InstallValidate">NOT Installed</Custom>
     </InstallExecuteSequence>
 
     <StandardDirectory Id="CommonAppDataFolder">

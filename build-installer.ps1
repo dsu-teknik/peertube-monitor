@@ -62,9 +62,10 @@ try {
         }
     }
 
-    # Add UI extension to WiX cache (required for v6)
-    Write-Host "  Adding WiX UI extension..." -ForegroundColor Yellow
+    # Add extensions to WiX cache (required for v6)
+    Write-Host "  Adding WiX extensions..." -ForegroundColor Yellow
     & wix extension add WixToolset.UI.wixext --global 2>$null
+    & wix extension add WixToolset.Util.wixext --global 2>$null
 }
 catch {
     Write-Error "Failed to check/install WiX Toolset: $_"
@@ -78,7 +79,7 @@ Push-Location $InstallerDir
 try {
     # Call wix build directly instead of using MSBuild/SDK
     # Pass version as a preprocessor variable
-    & wix build -arch x64 -ext WixToolset.UI.wixext -d ProductVersion="$Version" -out "$OutputMsi" Product.wxs
+    & wix build -arch x64 -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext -d ProductVersion="$Version" -out "$OutputMsi" Product.wxs
 
     if ($LASTEXITCODE -ne 0) {
         Write-Error "MSI build failed with exit code $LASTEXITCODE"
