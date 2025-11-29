@@ -35,13 +35,13 @@
       </Directory>
     </StandardDirectory>
 
-    <SetProperty Id="QtExecCleanupService"
+    <SetProperty Id="WixQuietExec64CmdLine"
                  Value="&quot;[SystemFolder]sc.exe&quot; stop PeerTubeMonitor &amp; &quot;[SystemFolder]sc.exe&quot; delete PeerTubeMonitor"
                  Before="CleanupOrphanedService"
-                 Sequence="execute" />
+                 Sequence="execute"
+                 Condition="NOT Installed" />
 
     <CustomAction Id="CleanupOrphanedService"
-                  Property="QtExecCleanupService"
                   BinaryRef="Wix4UtilCA_X64"
                   DllEntry="WixQuietExec64"
                   Execute="deferred"
