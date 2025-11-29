@@ -120,15 +120,8 @@ func (c *Config) GetCredentialSource() string {
 }
 
 func (c *Config) Validate() error {
-    if c.PeerTube.URL == "" {
-        return fmt.Errorf("peertube.url is required")
-    }
-    if c.PeerTube.Username == "" {
-        return fmt.Errorf("peertube.username is required")
-    }
-    if c.PeerTube.Password == "" {
-        return fmt.Errorf("peertube.password is required")
-    }
+    // Only validate critical structural settings
+    // Credentials are validated at authentication time, not startup
     if c.Watcher.WatchPath == "" {
         return fmt.Errorf("watcher.watchPath is required")
     }
